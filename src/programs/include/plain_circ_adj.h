@@ -139,7 +139,7 @@ public:
 			return res;
 		}
 	}
-	size_t num_and() override {
+	uint64_t num_and() override {
 		return ands;
 	}
 

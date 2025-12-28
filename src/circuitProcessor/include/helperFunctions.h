@@ -25,9 +25,9 @@ void swapRightParent(bool (&arr)[2][2]);
 
 void flipTable(bool (&arr)[2][2]);
 
-std::chrono::_V2::system_clock::time_point startClock();
+std::chrono::high_resolution_clock::time_point startClock();
 
-void stopClock(std::chrono::_V2::system_clock::time_point t1);
+void stopClock(std::chrono::high_resolution_clock::time_point t1);
 
 template<typename T>
 void printArr(T *arr, uint_fast64_t size)
