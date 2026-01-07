@@ -43,6 +43,10 @@ from .leakage_predictor import (
     get_potentially_intermediary_gates_from_output,
     get_leaked_inputs
 )
+from .python_to_circuit import (
+    PythonCircuitCompiler,
+    export_to_bristol
+)
 
 __all__ = [
     'CircuitDetails', 'TransformedGate', 'TransformedCircuit',
@@ -57,5 +61,6 @@ __all__ = [
     'get_intermediary_gates_from_output', 'regenerate_gates',
     'export_circuit_separate_files', 'export_obfuscated_input',
     'get_parents_of_each_wire', 'get_potentially_obfuscated_fixed_gates',
-    'get_potentially_intermediary_gates_from_output', 'get_leaked_inputs'
+    'get_potentially_intermediary_gates_from_output', 'get_leaked_inputs',
+    'PythonCircuitCompiler', 'export_to_bristol'
 ]

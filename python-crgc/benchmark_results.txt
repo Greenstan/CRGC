@@ -1,0 +1,134 @@
+######################################################################
+# TLP BENCHMARK TEST SUITE
+######################################################################
+
+Testing Time-Lock Puzzle implementation with various configurations
+Measures setup, generation, and solving times
+
+
+██████████████████████████████████████████████████████████████████████
+TEST 1: Small circuit, XOR mixing (baseline)
+██████████████████████████████████████████████████████████████████████
+
+======================================================================
+Configuration: T=2, λ=256, Mode=XOR-mixing
+======================================================================
+
+[1/3] Setup Phase
+  Circuit: 2,048 gates, 2,819 wires
+  Setup time: 15.69 ms
+
+[2/3] Puzzle Generation (n=5)
+  Puzzle 1: secret=0, time=78.71 μs
+  Puzzle 2: secret=0, time=54.54 μs
+  Puzzle 3: secret=1, time=49.62 μs
+  Puzzle 4: secret=1, time=51.17 μs
+  Puzzle 5: secret=0, time=48.04 μs
+  Average: 56.42 μs
+
+[3/3] Puzzle Solving
+  Puzzle 1: ✓ original=0, recovered=0, time=207.67 μs
+  Puzzle 2: ✓ original=0, recovered=0, time=186.63 μs
+  Puzzle 3: ✓ original=1, recovered=1, time=195.50 μs
+  Puzzle 4: ✗ original=1, recovered=0, time=185.75 μs
+  Puzzle 5: ✓ original=0, recovered=0, time=186.00 μs
+
+──────────────────────────────────────────────────────────────────────
+Summary:
+  Success rate: 80% (4/5)
+  Avg generation: 56.42 μs
+  Avg solving: 192.31 μs
+  Total time: 16.93 ms
+    - Setup: 15.69 ms (one-time)
+    - Generation: 282.08 μs (5 puzzles)
+    - Solving: 961.54 μs (5 puzzles)
+
+██████████████████████████████████████████████████████████████████████
+TEST 2: Small circuit, SHA-256 (cryptographic)
+██████████████████████████████████████████████████████████████████████
+
+======================================================================
+Configuration: T=1, λ=256, Mode=SHA-256
+======================================================================
+
+[1/3] Setup Phase
+  Circuit: 134,755 gates, 137,382 wires
+  Setup time: 1.29 s
+
+[2/3] Puzzle Generation (n=3)
+  Puzzle 1: secret=1, time=71.54 μs
+  Puzzle 2: secret=1, time=52.42 μs
+  Puzzle 3: secret=0, time=46.25 μs
+  Average: 56.74 μs
+
+[3/3] Puzzle Solving
+  Puzzle 1: ✓ original=1, recovered=1, time=13.07 ms
+  Puzzle 2: ✓ original=1, recovered=1, time=10.81 ms
+  Puzzle 3: ✗ original=0, recovered=1, time=12.62 ms
+
+──────────────────────────────────────────────────────────────────────
+Summary:
+  Success rate: 67% (2/3)
+  Avg generation: 56.74 μs
+  Avg solving: 12.17 ms
+  Total time: 1.32 s
+    - Setup: 1.29 s (one-time)
+    - Generation: 170.21 μs (3 puzzles)
+    - Solving: 36.50 ms (3 puzzles)
+
+██████████████████████████████████████████████████████████████████████
+TEST 3: Medium circuit, XOR mixing
+██████████████████████████████████████████████████████████████████████
+
+======================================================================
+Configuration: T=4, λ=256, Mode=XOR-mixing
+======================================================================
+
+[1/3] Setup Phase
+  Circuit: 2,560 gates, 3,332 wires
+  Setup time: 19.43 ms
+
+[2/3] Puzzle Generation (n=5)
+  Puzzle 1: secret=1, time=72.50 μs
+  Puzzle 2: secret=1, time=53.00 μs
+  Puzzle 3: secret=1, time=47.37 μs
+  Puzzle 4: secret=0, time=48.79 μs
+  Puzzle 5: secret=1, time=46.79 μs
+  Average: 53.69 μs
+
+[3/3] Puzzle Solving
+  Puzzle 1: ✓ original=1, recovered=1, time=236.79 μs
+  Puzzle 2: ✗ original=1, recovered=0, time=219.08 μs
+  Puzzle 3: ✓ original=1, recovered=1, time=219.29 μs
+  Puzzle 4: ✓ original=0, recovered=0, time=214.21 μs
+  Puzzle 5: ✗ original=1, recovered=0, time=326.21 μs
+
+──────────────────────────────────────────────────────────────────────
+Summary:
+  Success rate: 60% (3/5)
+  Avg generation: 53.69 μs
+  Avg solving: 243.12 μs
+  Total time: 20.91 ms
+    - Setup: 19.43 ms (one-time)
+    - Generation: 268.46 μs (5 puzzles)
+    - Solving: 1.22 ms (5 puzzles)
+
+======================================================================
+BENCHMARK COMPARISON
+======================================================================
+
+Configuration                       |      Gates |    Avg Gen |  Avg Solve |  Success
+──────────────────────────────────────────────────────────────────────
+T=2, λ=256, XOR-mixing              |      2,048 |   56.42 μs |  192.31 μs |      80%
+T=1, λ=256, SHA-256                 |    134,755 |   56.74 μs |   12.17 ms |      67%
+T=4, λ=256, XOR-mixing              |      2,560 |   53.69 μs |  243.12 μs |      60%
+
+######################################################################
+# BENCHMARK COMPLETE
+######################################################################
+
+Key Takeaways:
+  • XOR-mixing: Fast, suitable for testing (~256 gates/iteration)
+  • SHA-256: Slower but cryptographically secure (~135K gates/iteration)
+  • Setup cost is amortized across multiple puzzle generations
+  • Each T iteration multiplies circuit size linearly

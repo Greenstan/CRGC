@@ -18,7 +18,7 @@ from crgc import *
 def main():
     parser = argparse.ArgumentParser(description='CRGC Generator - Transform circuits to reusable garbled circuits')
     parser.add_argument('--circuit', default='adder64', help='Circuit name (default: adder64)')
-    parser.add_argument('--type', default='txt', choices=['txt'], help='Circuit type (default: txt)')
+    parser.add_argument('--type', default='txt', choices=['txt', 'python'], help='Circuit type: txt (Bristol file) or python (Python function) (default: txt)')
     parser.add_argument('--format', default='bristol', choices=['bristol', 'emp'], 
                        help='Circuit format (default: bristol)')
     parser.add_argument('--inputa', default='r', 
@@ -31,23 +31,81 @@ def main():
                        help='Number of threads (not implemented, reserved for future)')
     parser.add_argument('--use-numpy', action='store_true', 
                        help='Use numpy acceleration (if available)')
+    parser.add_argument('--input-bits-a', type=int, default=64,
+                       help='Bit width for input A when using Python functions (default: 64)')
+    parser.add_argument('--input-bits-b', type=int, default=64,
+                       help='Bit width for input B when using Python functions (default: 64)')
+    parser.add_argument('--output-bits', type=int, default=64,
+                       help='Bit width for output when using Python functions (default: 64)')
+    parser.add_argument('--export-bristol', action='store_true',
+                       help='Export Python function to Bristol format file')
     
     args = parser.parse_args()
     
-    # Resolve circuit path
-    circuit_path = Path(__file__).parent.parent / 'src' / 'circuits' / f"{args.circuit}.txt"
-    
-    if not circuit_path.exists():
-        print(f"Error: Circuit file not found: {circuit_path}")
-        return 1
-    
-    # Step 1: Load circuit
+    # Step 1: Load or compile circuit
     t1 = time.time()
-    details = import_bristol_circuit_details(str(circuit_path), args.format)
-    circuit = import_bristol_circuit_ex_not(str(circuit_path), details)
-    elapsed_ms = int((time.time() - t1) * 1000)
-    print(f"---TIMING--- {elapsed_ms}ms converting program to circuit")
-    print(f"---INFO--- numGates: {circuit.details.numGates}")
+    
+    if args.type == 'python':
+        # Import Python function and compile to circuit
+        from crgc import PythonCircuitCompiler, export_to_bristol
+        
+        # Import the Python module containing the circuit function
+        circuit_module_path = Path(__file__).parent / 'circuits' / f"{args.circuit}.py"
+        if not circuit_module_path.exists():
+            print(f"Error: Python circuit file not found: {circuit_module_path}")
+            return 1
+        
+        # Load the module dynamically
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(args.circuit, circuit_module_path)
+        circuit_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(circuit_module)
+        
+        # Get the circuit function (should be named 'circuit' or same as module name)
+        if hasattr(circuit_module, 'circuit'):
+            circuit_func = circuit_module.circuit
+        elif hasattr(circuit_module, args.circuit):
+            circuit_func = getattr(circuit_module, args.circuit)
+        else:
+            print(f"Error: No 'circuit' function found in {args.circuit}.py")
+            return 1
+        
+        # Compile to circuit
+        compiler = PythonCircuitCompiler()
+        circuit = compiler.compile(
+            circuit_func,
+            args.input_bits_a,
+            args.input_bits_b,
+            args.output_bits
+        )
+        
+        # Optionally export to Bristol format
+        if args.export_bristol:
+            bristol_path = Path(__file__).parent.parent / 'src' / 'circuits' / f"{args.circuit}_python.txt"
+            export_to_bristol(circuit, str(bristol_path))
+            print(f"---INFO--- Exported to Bristol format: {bristol_path}")
+        
+        elapsed_ms = int((time.time() - t1) * 1000)
+        print(f"---TIMING--- {elapsed_ms}ms compiling Python function to circuit")
+        print(f"---INFO--- numGates: {circuit.details.numGates}")
+    
+    else:
+        # Load Bristol circuit from file
+        # Check if it's an absolute path or just a circuit name
+        if Path(args.circuit).is_absolute() or '/' in args.circuit:
+            circuit_path = Path(args.circuit)
+        else:
+            circuit_path = Path(__file__).parent.parent / 'src' / 'circuits' / f"{args.circuit}.txt"
+        
+        if not circuit_path.exists():
+            print(f"Error: Circuit file not found: {circuit_path}")
+            return 1
+        
+        details = import_bristol_circuit_details(str(circuit_path), args.format)
+        circuit = import_bristol_circuit_ex_not(str(circuit_path), details)
+        elapsed_ms = int((time.time() - t1) * 1000)
+        print(f"---TIMING--- {elapsed_ms}ms converting program to circuit")
+        print(f"---INFO--- numGates: {circuit.details.numGates}")
     
     # Step 2: Predict leakage (diagnostics)
     t1 = time.time()

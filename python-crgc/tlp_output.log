@@ -1,0 +1,90 @@
+
+######################################################################
+# TRUE-TO-LITERATURE TLP IMPLEMENTATION
+# Based on Agrawal et al. (2024) - Construction 4.1
+######################################################################
+
+
+
+
+======================================================================
+DEMO: Small T (Ungarbled Circuit)
+======================================================================
+
+======================================================================
+Literature TLP Implementation (Agrawal et al. 2024)
+======================================================================
+Parameters:
+  Security parameter λ: 256 bits
+  Iterations T: 4
+  Sequential function: SHA-256 (runtime)
+  Circuit function: identity
+
+Building C_T circuit (T-fold composition)...
+✓ Circuit C_T created:
+  Gates: 2,560
+  Wires: 3,332
+  Input A bits: 260
+  Input B bits: 512
+  Output bits: 1
+
+######################################################################
+# COMPLETE TLP PROTOCOL EXECUTION
+# Secret bit: 1
+######################################################################
+
+======================================================================
+PSetup: Setup Phase
+======================================================================
+Circuit saved to: circuits/tlp_literature_T4_lambda256_rgc.txt and circuits/tlp_literature_T4_lambda256_rgc_details.txt
+
+To garble this circuit, run:
+  cd ../build
+  ./generator --circuit=tlp_literature_T4_lambda256_rgc \
+              --type=txt --format=bristol --store=txt --network=off
+
+======================================================================
+PGen: Puzzle Generation
+======================================================================
+Secret bit s: 1
+
+Sampled random values:
+  x: 989549b88edcadd2713b99b984b979e9... (32 bytes)
+  m: d2aa69c1de2aefe98251cad2300e3f16... (32 bytes)
+  r: 25bec440f992768324ce6bf9bdabd8a1... (32 bytes)
+  z: 00000000000000000000000000000000... (all zeros)
+
+Goldreich-Levin masking:
+  ⟨r, m⟩ = 0
+  masked_s = ⟨r, m⟩ ⊕ s = 0 ⊕ 1 = 1
+
+Puzzle Z = (x̃, r, masked_s)
+  (In ungarbled mode: Z = (x, m, r, masked_s))
+
+======================================================================
+Verifying Sequential Work
+======================================================================
+Computing f^4(x) using SHA-256...
+  Input x:      989549b88edcadd2713b99b984b979e9...
+  f^4(x):    731148d29f96f7e9a0989090ce3bc47d...
+
+======================================================================
+PSolve: Solving (UNGARBLED MODE)
+======================================================================
+Evaluating C_T with b=0 (should output m)...
+  This internally computes f^4(x)
+Traceback (most recent call last):
+  File "/Users/jaffermahdi/Desktop/Development/CRGC/python-crgc/tlp_literature_implementation.py", line 489, in <module>
+    main()
+    ~~~~^^
+  File "/Users/jaffermahdi/Desktop/Development/CRGC/python-crgc/tlp_literature_implementation.py", line 467, in main
+    demo_small_T()
+    ~~~~~~~~~~~~^^
+  File "/Users/jaffermahdi/Desktop/Development/CRGC/python-crgc/tlp_literature_implementation.py", line 360, in demo_small_T
+    success = tlp.run_complete_protocol(secret_bit=1)
+  File "/Users/jaffermahdi/Desktop/Development/CRGC/python-crgc/tlp_literature_implementation.py", line 333, in run_complete_protocol
+    s_recovered = self.PSolve_ungarbled(x, m, r, masked_s)
+  File "/Users/jaffermahdi/Desktop/Development/CRGC/python-crgc/tlp_literature_implementation.py", line 262, in PSolve_ungarbled
+    output_bits = self.circuit.evaluate(inputA, inputB)
+                  ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'TransformedCircuit' object has no attribute 'evaluate'
